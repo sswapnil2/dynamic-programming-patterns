@@ -1,3 +1,5 @@
+# Online Python compiler (interpreter) to run Python online.
+# Write Python 3 code in this online editor and run it.
 # Given a set of positive numbers, find if we can partition it into two subsets such that the sum of elements in both the subsets is equal.
 
 # Input: {1, 2, 3, 4}
@@ -40,6 +42,17 @@ def solve_recursive(subset, current_sum, index):
     
     # exlude the current index if the the current index is greater than half
     return solve_recursive(subset, current_sum, index + 1)
+    
+def solve_subset(subset):
+    
+    if not subset:
+        return True
+        
+    _sum = sum(subset)
+    if _sum % 2 == 1:
+        return False
+    half = _sum // 2
+    return solve_recursive(subset, half, 0)
 
 
 # apprach using dp for recurring problemts
@@ -49,22 +62,22 @@ def solve_recursive_dp(dp, subset, current_sum, index):
     
     # base condition
     if current_sum == 0:
-        return True
+        return 1
     
     # base condition
     if current_sum < 0 or index >= len(subset):
-        return False
+        return 0
     
     if dp[index][current_sum] == -1:
         # try out including the first element in the subset
         if subset[index] <= current_sum:
-            out = solve_recursive(dp, subset, current_sum - subset[index], index + 1)
+            out = solve_recursive_dp(dp, subset, current_sum - subset[index], index + 1)
             if out:
                 dp[index][current_sum] = 1
                 return dp[index][current_sum]
         
         # exlude the current index if the the current index is greater than half
-        dp[index][current_sum] = solve_recursive(dp, subset, current_sum, index + 1)
+        dp[index][current_sum] = solve_recursive_dp(dp, subset, current_sum, index + 1)
     
     return dp[index][current_sum]
 
@@ -84,19 +97,54 @@ def solve_subset_with_dp(subset):
     
     return solve_recursive_dp(dp, subset, half, 0)
     
-    
-def solve_subset(subset):
-    
+
+
+# solve subset problem using bottom up approach
+
+# there are two cases only
+# one to include the current index if current_number <= sum 
+# exlclude the current index current_number > sum
+def solve_subset_bottom_up(subset):
     if not subset:
         return True
-        
+    
     _sum = sum(subset)
+    
     if _sum % 2 == 1:
         return False
     half = _sum // 2
-    return solve_recursive(subset, half, 0)
+    
+    # dp
+    dp = [[False for c in range(half + 1)] for i in range(len(subset))]
+    
+    # when sum is 0 then for all index subset is possible
+    # for empty subset
+    for i in range(len(subset)):
+        dp[i][0] = True
+    
+    # for 1st index
+    for c in range(1, half + 1):
+        if subset[0] == c:
+            dp[0][c] = True
+    
+    for i in range(1, len(subset)):
+        for c in range(1, half + 1):
+            
+            # if previos 
+            if dp[i-1][c]:
+                dp[i][c] = dp[i-1][c]
+            
+            if subset[i] <= c:
+                dp[i][c] = dp[i-1][c - subset[i]]
+    
+    return dp[len(subset)-1][half]
+                
+        
+    
+    
+
     
 
 print(solve_subset([1, 2, 3, 4]))
 print(solve_subset_with_dp([1,2,3,4]))
-    
+print(solve_subset_bottom_up([1,2,3,4]))
